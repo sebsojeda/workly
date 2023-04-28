@@ -29,4 +29,4 @@ processes = []
 
 [mounts]
   source = "workly_db"
-  destination = "/mnt/workly_db"
+  destination = "/data/workly_db"

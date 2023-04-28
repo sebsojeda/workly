@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from . import crud, models, schema
@@ -15,6 +16,11 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@app.get("/")
+def docs_redirect():
+    return RedirectResponse(url="/docs")
 
 
 @app.post("/employers", response_model=schema.Employer)

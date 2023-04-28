@@ -1,0 +1,32 @@
+# fly.toml file generated for workly on 2023-03-29T19:36:22-06:00
+
+app = "workly"
+kill_signal = "SIGINT"
+kill_timeout = 5
+primary_region = "den"
+processes = []
+
+[build]
+  builder = "paketobuildpacks/builder:full"
+
+[[services]]
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+[mounts]
+  source = "workly_db"
+  destination = "/mnt/workly_db"

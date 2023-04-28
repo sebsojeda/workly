@@ -4,6 +4,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy import event
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
 
 from . import crud, models, schema
 from .database import SessionLocal, engine
@@ -37,6 +38,12 @@ def connect(dbapi_connection, connection_record):
 @app.get("/", include_in_schema=False)
 def docs_redirect():
     return RedirectResponse(url="/docs", status_code=301)
+
+
+@app.get("/healthcheck", include_in_schema=False, status_code=200)
+def health_check(db: Session = Depends(get_db)):
+    db.execute(text("SELECT 1")).fetchone()
+    return {"status": "ok"}
 
 
 @app.post(

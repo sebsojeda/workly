@@ -50,8 +50,24 @@ def get_job(db: Session, job_id: int):
     return db.query(models.Job).filter(models.Job.id == job_id).first()
 
 
-def get_jobs(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Job).offset(skip).limit(limit).all()
+def get_jobs(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    title: str = "",
+    location: str = "",
+    employer: str = "",
+):
+    return (
+        db.query(models.Job)
+        .filter(models.Job.title.contains(title))
+        .filter(models.Job.location.contains(location))
+        .filter(models.Job.employer.has(models.Employer.name.contains(employer)))
+        .order_by(models.Job.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def create_employer_job(db: Session, job: schema.JobCreate):
@@ -137,8 +153,14 @@ def get_resume(db: Session, resume_id: int):
     return db.query(models.Resume).filter(models.Resume.id == resume_id).first()
 
 
-def get_resumes(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Resume).offset(skip).limit(limit).all()
+def get_resumes(db: Session, applicant_id: int, skip: int = 0, limit: int = 100):
+    return (
+        db.query(models.Resume)
+        .filter(models.Resume.applicant_id == applicant_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def create_applicant_resume(db: Session, resume: schema.ResumeCreate):
@@ -172,14 +194,20 @@ def get_application(db: Session, application_id: int):
     )
 
 
-def get_applications(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Application).offset(skip).limit(limit).all()
+def get_applications(db: Session, job_id: int, skip: int = 0, limit: int = 100):
+    return (
+        db.query(models.Application)
+        .filter(models.Application.job_id == job_id)
+        .order_by(models.Application.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def create_application(db: Session, application: schema.ApplicationCreate):
     db_application = models.Application(
         status=application.status,
-        applicant_id=application.applicant_id,
         job_id=application.job_id,
         resume_id=application.resume_id,
         cover_letter=application.cover_letter,
@@ -213,3 +241,13 @@ def delete_application(db: Session, application_id: int):
     db.delete(db_application)
     db.commit()
     return db_application
+
+
+def get_notifications(db: Session, skip: int = 0, limit: int = 100):
+    return (
+        db.query(models.Notification)
+        .order_by(models.Notification.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )

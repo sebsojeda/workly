@@ -49,10 +49,11 @@ class JobUpdate(JobBase):
     pass
 
 
-class Job(JobCreate):
+class Job(JobBase):
     id: int = Field(alias="jobId", title="Job ID", gt=0, example=1)
     created_at: datetime = Field(alias="createdAt", title="Created At")
     updated_at: datetime = Field(alias="updatedAt", title="Updated At")
+    employer: Employer = Field()
 
     class Config:
         orm_mode = True
@@ -99,10 +100,11 @@ class ResumeUpdate(ResumeBase):
     pass
 
 
-class Resume(ResumeCreate):
+class Resume(ResumeBase):
     id: int = Field(alias="resumeId", title="Resume ID", gt=0, example=1)
     created_at: datetime = Field(alias="createdAt", title="Created At")
     updated_at: datetime = Field(alias="updatedAt", title="Updated At")
+    applicant: Applicant = Field()
 
     class Config:
         orm_mode = True
@@ -117,9 +119,6 @@ class ApplicationBase(BaseModel):
 
 
 class ApplicationCreate(ApplicationBase):
-    applicant_id: int = Field(
-        alias="applicantId", title="Applicant ID", gt=0, example=1
-    )
     job_id: int = Field(alias="jobId", title="Job ID", gt=0, example=1)
     resume_id: int = Field(alias="resumeId", title="Resume ID", gt=0, example=1)
 
@@ -128,10 +127,22 @@ class ApplicationUpdate(ApplicationBase):
     pass
 
 
-class Application(ApplicationCreate):
+class Application(ApplicationBase):
     id: int = Field(alias="applicationId", title="Application ID", gt=0, example=1)
     created_at: datetime = Field(alias="createdAt", title="Created At")
     updated_at: datetime = Field(alias="updatedAt", title="Updated At")
+    job: Job = Field()
+    resume: Resume = Field()
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+
+
+class Notification(BaseModel):
+    message: str = Field(example="A new job was posted...", min_length=1)
+
+    job: Job = Field()
 
     class Config:
         orm_mode = True

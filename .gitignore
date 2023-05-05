@@ -5,4 +5,7 @@ venv
 __pycache__
 
 # Local Database
-workly.db
+*.db
+
+# Logs
+*.log

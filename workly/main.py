@@ -8,7 +8,8 @@ from sqlalchemy.sql import text
 
 from . import crud, models, schema
 from .database import SessionLocal, engine
-from .seed import seedDatabase
+from .seed import seed_database
+from .triggers import create_triggers
 
 app = FastAPI(title="Workly", version="0.1.0", description="Workly API")
 
@@ -24,7 +25,8 @@ def get_db():
 @app.on_event(event_type="startup")
 def startup_event():
     models.Base.metadata.create_all(bind=engine)
-    seedDatabase(next(get_db()))
+    create_triggers(next(get_db()))
+    seed_database(next(get_db()))
 
 
 @event.listens_for(engine, "connect")
@@ -147,8 +149,17 @@ def update_job(job: schema.JobUpdate, job_id: int, db: Session = Depends(get_db)
     status_code=200,
     description="Get all jobs",
 )
-def read_jobs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    jobs = crud.get_jobs(db, skip=skip, limit=limit)
+def search_jobs(
+    skip: int = 0,
+    limit: int = 100,
+    title: str = "",
+    location: str = "",
+    employer: str = "",
+    db: Session = Depends(get_db),
+):
+    jobs = crud.get_jobs(
+        db, skip=skip, limit=limit, title=title, location=location, employer=employer
+    )
     return jobs
 
 
@@ -281,8 +292,10 @@ def update_resume(
     status_code=200,
     description="Get all resumes",
 )
-def read_resumes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    resumes = crud.get_resumes(db, skip=skip, limit=limit)
+def read_resumes_for_applicant(
+    applicant_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
+    resumes = crud.get_resumes(db, applicant_id, skip=skip, limit=limit)
     return resumes
 
 
@@ -353,8 +366,10 @@ def update_application(
     status_code=200,
     description="Get all applications",
 )
-def read_applications(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    applications = crud.get_applications(db, skip=skip, limit=limit)
+def read_applications_for_job(
+    job_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+):
+    applications = crud.get_applications(db, job_id, skip=skip, limit=limit)
     return applications
 
 
@@ -383,3 +398,15 @@ def delete_application(application_id: int, db: Session = Depends(get_db)):
     if db_application is None:
         raise HTTPException(404, detail="Application not found")
     crud.delete_application(db=db, application_id=application_id)
+
+
+@app.get(
+    "/notifications",
+    response_model=list[schema.Notification],
+    tags=["notifications"],
+    status_code=200,
+    description="Get all notifications",
+)
+def read_notifications(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    notifications = crud.get_notifications(db, skip=skip, limit=limit)
+    return notifications

@@ -1,5 +1,7 @@
 # workly
 
+<img width="939" alt="image" src="https://github.com/sebsojeda/workly/assets/31638314/c016be0e-5170-438b-a0ba-e5d3bd0300b2">
+
 An applicant tracking system (ATS) API. Built using Python, SQLAlchemy, and FastAPI.
 
 ## Getting Started
